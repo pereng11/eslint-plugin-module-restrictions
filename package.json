@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-module-restrictions",
   "license": "MIT",
-  "author": "son",
+  "author": "manlidongbulgama",
   "version": "0.1.0",
   "main": "./dist/eslint/index.js",
   "types": "./dist/eslint/index.d.ts",
