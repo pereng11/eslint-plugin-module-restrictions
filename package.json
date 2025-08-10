@@ -2,7 +2,6 @@
   "name": "eslint-plugin-module-restrictions",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
   "main": "./dist/eslint/index.cjs",
   "module": "./dist/eslint/index.mjs",
   "types": "./dist/eslint/index.d.ts",
@@ -10,9 +9,15 @@
     "dist/",
     "README.md"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/eslint/index.d.ts",
+      "require": "./dist/eslint/index.js",
+      "import": "./dist/eslint/index.js"
+    }
+  },
   "scripts": {
     "build": "vite build",
-    "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "prepublishOnly": "npm run build"

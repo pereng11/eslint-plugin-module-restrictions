@@ -14,31 +14,20 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
-        // ESLint 플러그인 (CommonJS)
         "eslint/index": resolve(__dirname, "src/eslint/index.ts"),
-        // TypeScript 플러그인 (ESM + CommonJS 호환)
-        "typescript/index": resolve(__dirname, "src/typescript/index.ts"),
       },
-      formats: ["cjs", "es"], // 두 형식 모두 지원
+      formats: ["cjs"],
     },
 
     rollupOptions: {
       external: ["typescript", "eslint", "minimatch", "path", "fs"],
 
       output: [
-        // CommonJS 출력 (ESLint용)
         {
           format: "cjs",
           entryFileNames: "[name].cjs",
           dir: "dist",
           exports: "auto",
-        },
-        // ESM 출력 (TypeScript/현대적 사용)
-        {
-          format: "es",
-          entryFileNames: "[name].mjs",
-          dir: "dist",
-          exports: "named",
         },
       ],
     },
