@@ -64,19 +64,7 @@ export const restrictImportsRule: Rule.RuleModule = {
         if (!node.source || typeof node.source.value !== "string") return;
 
         const importPath = node.source.value;
-        const importerPath = context.filename;
-
-        // restrictions의 pattern 중 하나라도 매칭되는지 확인
-        const matchedRestrictions = restrictions.filter((restriction) =>
-          minimatch(importPath, restriction.pattern)
-        );
-
-        console.log(matchedRestrictions);
-
-        // pattern이 매칭되지 않으면 검사하지 않음
-        if (matchedRestrictions.length === 0) {
-          return;
-        }
+        const importerPath = context.getFilename();
 
         // 실제 파일 경로 해석
         let resolvedPath: string;
@@ -85,6 +73,11 @@ export const restrictImportsRule: Rule.RuleModule = {
         } catch {
           return; // 경로 해석 실패 시 건너뛰기
         }
+
+        // restrictions의 pattern 중 하나라도 매칭되는지 확인
+        const matchedRestrictions = restrictions.filter((restriction) =>
+          minimatch(resolvedPath, restriction.pattern)
+        );
 
         // 각 제한 규칙 검사
         for (const restriction of matchedRestrictions) {
