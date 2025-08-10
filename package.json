@@ -1,0 +1,32 @@
+{
+  "name": "eslint-plugin-module-restrictions",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/eslint/index.cjs",
+  "module": "./dist/eslint/index.mjs",
+  "types": "./dist/eslint/index.d.ts",
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@types/eslint": "^9.6.1",
+    "@types/node": "^24.2.1",
+    "minimatch": "^10.0.3",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.0",
+    "vite-plugin-dts": "^4.5.4"
+  },
+  "peerDependencies": {
+    "eslint": ">=8.0.0",
+    "typescript": ">=4.0.0"
+  }
+}
