@@ -1,11 +1,10 @@
 import type { Rule } from "eslint";
-import { minimatch } from "minimatch";
 import * as path from "path";
 import {
   DEFAULT_RESTRICTIONS,
   type ModuleRestriction,
-} from "../../shared/config";
-import { isImportAllowed } from "../../shared/matcher";
+  validateImport,
+} from "../../shared";
 
 export const restrictImportsRule: Rule.RuleModule = {
   meta: {
@@ -66,30 +65,16 @@ export const restrictImportsRule: Rule.RuleModule = {
         const importPath = node.source.value;
         const importerPath = context.getFilename();
 
-        // 실제 파일 경로 해석
-        let resolvedPath: string;
-        try {
-          resolvedPath = path.resolve(path.dirname(importerPath), importPath);
-        } catch {
-          return; // 경로 해석 실패 시 건너뛰기
-        }
+        const result = validateImport(importPath, importerPath, restrictions);
 
-        // restrictions의 pattern 중 하나라도 매칭되는지 확인
-        const matchedRestrictions = restrictions.filter((restriction) =>
-          minimatch(resolvedPath, restriction.pattern)
-        );
-
-        // 각 제한 규칙 검사
-        for (const restriction of matchedRestrictions) {
-          if (isImportAllowed(resolvedPath, importerPath, restriction)) {
-            continue;
-          }
-
+        if (!result.isValid) {
+          // 첫 번째 위반 사항만 리포트 (기존 동작과 동일)
+          const violation = result.violations[0];
           context.report({
             node: node.source,
             messageId: "restrictedImport",
             data: {
-              message: restriction.message || "Import not allowed",
+              message: violation.message,
               importPath,
               importerPath: path.basename(importerPath),
             },

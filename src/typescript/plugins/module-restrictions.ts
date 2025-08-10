@@ -1,9 +1,9 @@
-import { minimatch } from "minimatch";
 import ts from "typescript";
 import {
   DEFAULT_RESTRICTIONS,
-  isImportAllowed,
   type ModuleRestriction,
+  shouldIncludeInCompletions,
+  validateImport,
 } from "../../shared";
 
 interface PluginConfig {
@@ -76,16 +76,7 @@ function createModuleRestrictionPlugin(
     completions.entries = completions.entries.filter((entry) => {
       if (entry.kind !== ts.ScriptElementKind.moduleElement) return true;
 
-      const resolvedPath = resolveModulePath(entry.name, fileName);
-      if (!resolvedPath) return true;
-
-      for (const rule of config.rules) {
-        if (minimatch(resolvedPath, rule.pattern)) {
-          return isImportAllowed(resolvedPath, fileName, rule);
-        }
-      }
-
-      return true;
+      return shouldIncludeInCompletions(entry.name, fileName, config.rules);
     });
 
     return completions;
@@ -110,23 +101,18 @@ function createModuleRestrictionPlugin(
         ts.isStringLiteral(node.moduleSpecifier)
       ) {
         const importPath = node.moduleSpecifier.text;
-        const resolvedPath = resolveModulePath(importPath, fileName);
 
-        if (resolvedPath) {
-          for (const rule of config.rules) {
-            if (minimatch(resolvedPath, rule.pattern)) {
-              if (!isImportAllowed(resolvedPath, fileName, rule)) {
-                restrictionDiagnostics.push(
-                  createDiagnostic(
-                    node.moduleSpecifier,
-                    `Module import restricted: ${
-                      rule.message || "Import not allowed"
-                    }`
-                  )
-                );
-              }
-            }
-          }
+        const result = validateImport(importPath, fileName, config.rules);
+
+        if (!result.isValid) {
+          // 첫 번째 위반 사항만 진단 (기존 동작과 동일)
+          const violation = result.violations[0];
+          restrictionDiagnostics.push(
+            createDiagnostic(
+              node.moduleSpecifier,
+              `Module import restricted: ${violation.message}`
+            )
+          );
         }
       }
 
@@ -157,23 +143,6 @@ function createModuleRestrictionPlugin(
       node = node.parent;
     }
     return false;
-  }
-
-  function resolveModulePath(
-    importPath: string,
-    currentFile: string
-  ): string | undefined {
-    const program = info.languageService.getProgram();
-    if (!program) return undefined;
-
-    const resolved = ts.resolveModuleName(
-      importPath,
-      currentFile,
-      program.getCompilerOptions(),
-      ts.sys
-    );
-
-    return resolved.resolvedModule?.resolvedFileName;
   }
 
   return proxy;
