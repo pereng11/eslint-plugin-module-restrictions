@@ -1,7 +1,11 @@
 {
   "name": "eslint-plugin-module-restrictions",
   "license": "MIT",
-  "author": "manlidongbulgama",
+  "author": "pereng11",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pereng11/eslint-plugin-module-restrictions.git"
+  },
   "version": "0.1.0",
   "main": "./dist/eslint/index.js",
   "types": "./dist/eslint/index.d.ts",
