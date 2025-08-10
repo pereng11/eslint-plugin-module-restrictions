@@ -32,8 +32,8 @@ export const restrictImportsRule: Rule.RuleModule = {
                   type: "string",
                   enum: [
                     "same-directory",
-                    "parent-prefix",
-                    "same-file-prefix",
+                    "shared-module",
+                    "private-module",
                     "custom",
                   ],
                 },

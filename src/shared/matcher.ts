@@ -22,11 +22,11 @@ export function isImportAllowed(
     case "same-directory":
       return importedDir === importerDir;
 
-    case "parent-prefix":
+    case "shared-module":
       const parentPrefix = importedBasename.split(".")[0];
       return importerBasename.startsWith(parentPrefix);
 
-    case "same-file-prefix":
+    case "private-module":
       const importedPrefix = importedBasename.split(".")[0];
       const importerPrefix = importerBasename.split(".")[0];
       return importedPrefix === importerPrefix;

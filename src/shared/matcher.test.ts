@@ -39,10 +39,10 @@ describe("isImportAllowed", () => {
     });
   });
 
-  describe("parent-prefix rule", () => {
+  describe("shared-module rule", () => {
     const restriction: ModuleRestriction = {
       pattern: "**/*.sub.*",
-      rule: "parent-prefix",
+      rule: "shared-module",
       message:
         "Sub modules can only be imported by files with matching parent prefix",
     };
@@ -84,10 +84,10 @@ describe("isImportAllowed", () => {
     });
   });
 
-  describe("same-file-prefix rule", () => {
+  describe("private-module rule", () => {
     const restriction: ModuleRestriction = {
       pattern: "**/*.private.*",
-      rule: "same-file-prefix",
+      rule: "private-module",
       message: "Private modules can only be imported by files with same prefix",
     };
 
