@@ -11,9 +11,6 @@ export interface ValidationResult {
   }>;
 }
 
-/**
- * 린트와 타입스크립트 플러그인에서 공통으로 사용하는 import 검증 로직
- */
 export function validateImport(
   importPath: string,
   importerPath: string,
@@ -52,16 +49,4 @@ export function validateImport(
     isValid: violations.length === 0,
     violations,
   };
-}
-
-/**
- * 자동완성 항목 필터링을 위한 헬퍼 함수
- */
-export function shouldIncludeInCompletions(
-  moduleName: string,
-  currentFilePath: string,
-  restrictions: ModuleRestriction[]
-): boolean {
-  const result = validateImport(moduleName, currentFilePath, restrictions);
-  return result.isValid;
 }
