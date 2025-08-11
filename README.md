@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 
-An ESLint plugin that restricts module imports based on file naming patterns. This tool helps enforce architectural rules and maintain consistent code structure in your projects.
+An ESLint plugin that restricts module imports based on file naming patterns. This tool helps enforce architectural rules and maintain consistent code structure in your projects. With zero configuration needed!
 
 ## ✨ Features
 
@@ -108,6 +108,50 @@ import { UserModel } from "./user.model";
 import { AuthService } from "./auth.service";
 ```
 
+### `internal-directory`
+
+Restricts imports from files in underscore-prefixed directories (`_*`) to only allow imports from the same level directory or within the underscore directory itself.
+
+**Example:**
+
+```typescript
+// File structure:
+// src/
+// ├── _utils/
+// │   ├── helper.ts
+// │   └── validator.ts
+// ├── components/
+// │   ├── Button.ts
+// │   └── _internal/
+// │       └── helper.ts
+// └── pages/
+//     └── Home.ts
+
+// ✅ Allowed - same level directory
+// From: src/components/Button.ts
+import { helper } from "../../_utils/helper";
+
+// ✅ Allowed - within underscore directory
+// From: src/_utils/validator.ts
+import { helper } from "./helper";
+
+// ✅ Allowed - nested within underscore directory
+// From: src/_utils/nested/processor.ts
+import { helper } from "../helper";
+
+// ✅ Allowed - same level underscore directories
+// From: src/_components/Button.ts
+import { helper } from "../_utils/helper";
+
+// ❌ Not allowed - different parent directory
+// From: src/pages/Home.ts
+import { helper } from "../_utils/helper";
+
+// ❌ Not allowed - deeply nested to different level
+// From: src/pages/nested/Home.ts
+import { helper } from "../../components/_internal/helper";
+```
+
 ### `custom`
 
 Allows custom logic for import restrictions.
@@ -183,9 +227,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Bug Reports**: [GitHub Issues](https://github.com/your-username/eslint-plugin-module-restrictions/issues)
-- **Feature Requests**: [GitHub Issues](https://github.com/your-username/eslint-plugin-module-restrictions/issues)
-- **Documentation**: [GitHub Wiki](https://github.com/your-username/eslint-plugin-module-restrictions/wiki)
+- **Feature Requests & Bug Reports**: [GitHub Issues](https://github.com/your-username/eslint-plugin-module-restrictions/issues)
 
 ## 🙏 Acknowledgments
 
