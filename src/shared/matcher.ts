@@ -31,6 +31,36 @@ export function isImportAllowed(
       const importerPrefix = importerBasename.split(".")[0];
       return importedPrefix === importerPrefix;
 
+    case "internal-directory":
+      // _로 시작하는 폴더 내부의 파일인지 확인
+      const importedPathParts = importedPath.split(path.sep);
+      const underscoreDirIndex = importedPathParts.findIndex(
+        (part) => part.startsWith("_") && part.length > 1
+      );
+
+      if (underscoreDirIndex === -1) {
+        // _로 시작하는 폴더가 아니면 제한 없음
+        return true;
+      }
+
+      // underscore 디렉토리 경로 추출
+      const underscoreDirPath = importedPathParts
+        .slice(0, underscoreDirIndex + 1)
+        .join(path.sep);
+      const importerPathParts = importerPath.split(path.sep);
+
+      // 같은 레벨에서 import하는 경우 (underscore 디렉토리와 같은 부모 디렉토리)
+      const sameLevelImport =
+        importerPathParts.slice(0, underscoreDirIndex).join(path.sep) ===
+        importedPathParts.slice(0, underscoreDirIndex).join(path.sep);
+
+      // underscore 디렉토리 내부에서 import하는 경우
+      const internalImport = importerPath.startsWith(
+        underscoreDirPath + path.sep
+      );
+
+      return sameLevelImport || internalImport;
+
     case "custom":
       return (
         restriction.allowedImporters?.some((pattern) =>
