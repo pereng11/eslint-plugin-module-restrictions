@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { ModuleRestriction } from "./config";
+import { type ModuleRestriction, Rule } from "./config";
 import { isImportAllowed } from "./matcher";
 
 describe("isImportAllowed", () => {
   describe("same-directory rule", () => {
     const restriction: ModuleRestriction = {
       pattern: "**/*.internal.*",
-      rule: "same-directory",
+      rule: Rule.SAME_DIRECTORY,
       message:
         "Internal modules can only be imported within the same directory",
     };
@@ -42,7 +42,7 @@ describe("isImportAllowed", () => {
   describe("shared-module rule", () => {
     const restriction: ModuleRestriction = {
       pattern: "**/*.sub.*",
-      rule: "shared-module",
+      rule: Rule.SHARED_MODULE,
       message:
         "Sub modules can only be imported by files with matching parent prefix",
     };
@@ -87,7 +87,7 @@ describe("isImportAllowed", () => {
   describe("private-module rule", () => {
     const restriction: ModuleRestriction = {
       pattern: "**/*.private.*",
-      rule: "private-module",
+      rule: Rule.PRIVATE_MODULE,
       message: "Private modules can only be imported by files with same prefix",
     };
 
@@ -131,7 +131,7 @@ describe("isImportAllowed", () => {
   describe("custom rule", () => {
     const restriction: ModuleRestriction = {
       pattern: "**/*.custom.*",
-      rule: "custom",
+      rule: Rule.CUSTOM,
       message: "Custom restriction",
       allowedImporters: ["**/allowed/**", "**/special/**"],
     };
@@ -166,7 +166,7 @@ describe("isImportAllowed", () => {
     it("should allow all imports when no allowedImporters specified", () => {
       const restrictionWithoutAllowed: ModuleRestriction = {
         pattern: "**/*.custom.*",
-        rule: "custom",
+        rule: Rule.CUSTOM,
         message: "Custom restriction",
       };
 
@@ -179,11 +179,101 @@ describe("isImportAllowed", () => {
     });
   });
 
+  describe("internal-directory rule", () => {
+    const restriction: ModuleRestriction = {
+      pattern: "**/_*/**/*",
+      rule: Rule.INTERNAL_DIRECTORY,
+      message:
+        "Files in underscore-prefixed directories can only be imported from the same level or within the directory",
+    };
+
+    it("should allow import when importer is in the same level directory", () => {
+      const importedPath = "/project/src/_utils/helper.ts";
+      const importerPath = "/project/src/components/Button.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        true
+      );
+    });
+
+    it("should allow import when importer is within the underscore directory", () => {
+      const importedPath = "/project/src/_utils/helper.ts";
+      const importerPath = "/project/src/_utils/validator.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        true
+      );
+    });
+
+    it("should allow import when importer is in nested underscore directory", () => {
+      const importedPath = "/project/src/_utils/helper.ts";
+      const importerPath = "/project/src/_utils/nested/processor.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        true
+      );
+    });
+
+    it("should allow import when importer is in deeper nested directory", () => {
+      const importedPath = "/project/src/_utils/helper.ts";
+      const importerPath = "/project/src/components/nested/Button.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        true
+      );
+    });
+
+    it("should deny import when importer is in different parent directory", () => {
+      const importedPath = "/project/src/components/_internal/helper.ts";
+      const importerPath = "/project/src/pages/Home.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        false
+      );
+    });
+
+    it("should allow import when both files are in underscore directories at same level", () => {
+      const importedPath = "/project/src/_utils/helper.ts";
+      const importerPath = "/project/src/_components/Button.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        true
+      );
+    });
+
+    it("should handle files not in underscore directories (no restriction)", () => {
+      const importedPath = "/project/src/components/Button.ts";
+      const importerPath = "/project/src/pages/Home.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        true
+      );
+    });
+
+    it("should handle nested underscore directories correctly", () => {
+      const importedPath = "/project/src/components/_internal/helper.ts";
+      const importerPath = "/project/src/components/Button.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        true
+      );
+    });
+
+    it("should deny import from deeply nested underscore directory to different level", () => {
+      const importedPath = "/project/src/components/_internal/helper.ts";
+      const importerPath = "/project/src/pages/nested/Home.ts";
+
+      expect(isImportAllowed(importedPath, importerPath, restriction)).toBe(
+        false
+      );
+    });
+  });
+
   describe("edge cases", () => {
     it("should handle files without extensions", () => {
       const restriction: ModuleRestriction = {
         pattern: "**/*.internal.*",
-        rule: "same-directory",
+        rule: Rule.SAME_DIRECTORY,
       };
 
       const importedPath = "/project/src/components/Button.internal";
@@ -197,7 +287,7 @@ describe("isImportAllowed", () => {
     it("should handle files with multiple extensions", () => {
       const restriction: ModuleRestriction = {
         pattern: "**/*.internal.*",
-        rule: "same-directory",
+        rule: Rule.SAME_DIRECTORY,
       };
 
       const importedPath = "/project/src/components/Button.internal.test.ts";
@@ -211,7 +301,7 @@ describe("isImportAllowed", () => {
     it("should handle unknown rule types", () => {
       const restriction: ModuleRestriction = {
         pattern: "**/*.unknown.*",
-        rule: "unknown" as any,
+        rule: "unknown" as Rule,
       };
 
       const importedPath = "/project/src/components/Button.unknown.ts";
