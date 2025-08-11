@@ -3,6 +3,7 @@ import * as path from "path";
 import {
   DEFAULT_RESTRICTIONS,
   type ModuleRestriction,
+  rules,
   validateImport,
 } from "../../shared";
 
@@ -30,12 +31,7 @@ export const restrictImportsRule: Rule.RuleModule = {
                 pattern: { type: "string" },
                 rule: {
                   type: "string",
-                  enum: [
-                    "same-directory",
-                    "shared-module",
-                    "private-module",
-                    "custom",
-                  ],
+                  enum: rules,
                 },
                 message: { type: "string" },
                 allowedImporters: {
