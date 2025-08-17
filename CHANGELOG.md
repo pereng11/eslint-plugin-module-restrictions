@@ -20,6 +20,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bug fixes and performance improvements
 
+## [0.3.0] - 2025-08-18
+
+### Added
+
+- **New Rules**:
+  - `no-deep-import` - When an index file exists, modules within a directory can only be accessed through its index file
+  - `avoid-circular-dependency` - Prevents circular dependencies by restricting index file imports within the same module
+
+### Changed
+
+- **Updated package version** - Bumped to version 0.2.2 in package.json
+- **Enhanced rule validation** - Improved error handling and validation logic
+- **Code optimization** - Better performance for complex directory structures
+
+### Fixed
+
+- **Internal directory logic** - Fixed edge cases in underscore-prefixed directory handling
+- **Index file detection** - Improved accuracy of index file existence checks
+
 ## [0.2.0] - 2025-08-12
 
 ### Added
