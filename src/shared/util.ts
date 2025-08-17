@@ -3,7 +3,7 @@ import * as path from "path";
 
 import { INDEX_PATTERNS } from "./const";
 
-export const findClosestIndexFile = (filePath: string) => {
+export const findClosestIndexDir = (filePath: string) => {
   let currentDir = filePath;
 
   // 루트 디렉토리에 도달할 때까지 상위로 올라가면서 확인

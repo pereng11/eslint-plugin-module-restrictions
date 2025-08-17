@@ -4,6 +4,7 @@ export enum Rule {
   PRIVATE_MODULE = "private-module",
   INTERNAL_DIRECTORY = "internal-directory",
   NO_DEEP_IMPORT = "no-deep-import",
+  AVOID_CIRCULAR_DEPENDENCY = "avoid-circular-dependency",
   CUSTOM = "custom",
 }
 
@@ -17,6 +18,7 @@ export interface ModuleRestriction {
     | Rule.PRIVATE_MODULE
     | Rule.INTERNAL_DIRECTORY
     | Rule.NO_DEEP_IMPORT
+    | Rule.AVOID_CIRCULAR_DEPENDENCY
     | Rule.CUSTOM;
   message?: string;
   allowedImporters?: string[];
@@ -51,5 +53,11 @@ export const DEFAULT_RESTRICTIONS: ModuleRestriction[] = [
     rule: Rule.NO_DEEP_IMPORT,
     message:
       "When an index file exists, modules within a directory can only be accessed through its index file",
+  },
+  {
+    pattern: "**/*",
+    rule: Rule.AVOID_CIRCULAR_DEPENDENCY,
+    message:
+      "Avoid importing through index file within the same module to prevent circular dependencies",
   },
 ];
