@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Removed Rules**:
+  - `same-directory`
+
+### Changed
+
 - **Updated package version** - Bumped to version 0.2.2 in package.json
 - **Enhanced rule validation** - Improved error handling and validation logic
 - **Code optimization** - Better performance for complex directory structures
