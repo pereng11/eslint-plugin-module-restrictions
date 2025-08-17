@@ -3,6 +3,7 @@ export enum Rule {
   SHARED_MODULE = "shared-module",
   PRIVATE_MODULE = "private-module",
   INTERNAL_DIRECTORY = "internal-directory",
+  NO_DEEP_IMPORT = "no-deep-import",
   CUSTOM = "custom",
 }
 
@@ -15,6 +16,7 @@ export interface ModuleRestriction {
     | Rule.SHARED_MODULE
     | Rule.PRIVATE_MODULE
     | Rule.INTERNAL_DIRECTORY
+    | Rule.NO_DEEP_IMPORT
     | Rule.CUSTOM;
   message?: string;
   allowedImporters?: string[];
@@ -43,5 +45,11 @@ export const DEFAULT_RESTRICTIONS: ModuleRestriction[] = [
     rule: Rule.INTERNAL_DIRECTORY,
     message:
       "Files in underscore-prefixed directories can only be imported from the same level or within the directory",
+  },
+  {
+    pattern: "**/*",
+    rule: Rule.NO_DEEP_IMPORT,
+    message:
+      "When an index file exists, modules within a directory can only be accessed through its index file",
   },
 ];
