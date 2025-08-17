@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue.svg)](https://www.typescriptlang.org/)
 
-An ESLint plugin that restricts module imports based on file naming patterns. This tool helps enforce architectural rules and maintain consistent code structure in your projects. With zero configuration needed!
+An ESLint plugin that restricts module imports based on file naming patterns. This tool helps enforce architectural rules and maintain consistent code structure in your projects. **With zero configuration needed**!
 
 ## ✨ Features
 
@@ -62,18 +62,25 @@ module.exports = {
 
 ## 📋 Supported Rules
 
-### `same-directory`
+### `private-module`
 
-Restricts imports to files within the same directory.
+Private modules can only be imported by files with same parent name.
 
 **Example:**
 
 ```typescript
+// File: Modal.private.Header.tsx
 // ✅ Allowed
-import { helper } from "./helper";
+// From: src/components/Modal/Modal.tsx
+import { ModalHeader } from "./Modal.private.Header";
 
 // ❌ Not allowed
-import { utils } from "../utils";
+// From: src/components/Box/Box.tsx
+import { ModalHeader } from "./Modal.private.Header";
+
+// ❌ Not allowed
+// From: src/components/Modal/ModalContent.tsx
+import { ModalHeader } from "./Modal.private.Header";
 ```
 
 ### `shared-module`
@@ -85,27 +92,16 @@ Allows imports only from files that start with the same prefix as the importing 
 ```typescript
 // File: Box.sub.Icon.tsx
 // ✅ Allowed
-import { Box } from "./Box.component";
-import { BoxHeader } from "./BoxHeader.component";
+// From: src/components/Box/Box.tsx
+import { BoxIcon } from "./Box.sub.Icon";
 
-// ❌ Not allowed
-import { Button } from "./Button.component";
-```
-
-### `private-module`
-
-Restricts imports to files that share the same file prefix.
-
-**Example:**
-
-```typescript
-// File: user.service.ts
 // ✅ Allowed
-import { UserRepository } from "./user.repository";
-import { UserModel } from "./user.model";
+// From: src/components/Box/BoxHeader.tsx
+import { BoxIcon } from "./Box.sub.Icon";
 
 // ❌ Not allowed
-import { AuthService } from "./auth.service";
+// From: src/components/Button/Button.tsx
+import { BoxIcon } from "./Box.sub.Icon";
 ```
 
 ### `internal-directory`
@@ -117,39 +113,127 @@ Restricts imports from files in underscore-prefixed directories (`_*`) to only a
 ```typescript
 // File structure:
 // src/
-// ├── _utils/
-// │   ├── helper.ts
-// │   └── validator.ts
+// ├── _shared/
+// │   ├── api-client.ts
+// │   ├── constants.ts
+// │   └── types.ts
 // ├── components/
-// │   ├── Button.ts
-// │   └── _internal/
-// │       └── helper.ts
-// └── pages/
-//     └── Home.ts
+// │   ├── Button/
+// │   │   ├── Button.tsx
+// │   │   └── _internal/
+// │   │       ├── button-styles.ts
+// │   │       └── button-utils.ts
+// │   └── Modal/
+// │       ├── Modal.tsx
+// │       └── _internal/
+// │           └── modal-hooks.ts
+// ├── pages/
+// │   ├── Home/
+// │   │   └── HomePage.tsx
+// │   └── Profile/
+// │       └── ProfilePage.tsx
+// └── hooks/
+//     └── useAuth.ts
 
 // ✅ Allowed - same level directory
-// From: src/components/Button.ts
-import { helper } from "../../_utils/helper";
+// From: src/pages/Home/HomePage.tsx
+import { API_BASE_URL } from "../../_shared/constants";
+
+// ✅ Allowed - same level directory
+// From: src/components/Button/Button.tsx
+import { API_BASE_URL } from "../../_shared/constants";
 
 // ✅ Allowed - within underscore directory
-// From: src/_utils/validator.ts
-import { helper } from "./helper";
+// From: src/_shared/api-client.ts
+import { API_BASE_URL } from "./constants";
+import { ApiResponse } from "./types";
 
-// ✅ Allowed - nested within underscore directory
-// From: src/_utils/nested/processor.ts
-import { helper } from "../helper";
-
-// ✅ Allowed - same level underscore directories
-// From: src/_components/Button.ts
-import { helper } from "../_utils/helper";
+// ✅ Allowed - within underscore directory
+// From: src/components/Button/_internal/button-utils.ts
+import { buttonStyles } from "./button-styles";
 
 // ❌ Not allowed - different parent directory
-// From: src/pages/Home.ts
-import { helper } from "../_utils/helper";
+// From: src/components/Modal/Modal.tsx
+import { buttonUtils } from "../Button/_internal/button-utils";
 
-// ❌ Not allowed - deeply nested to different level
-// From: src/pages/nested/Home.ts
-import { helper } from "../../components/_internal/helper";
+// ❌ Not allowed - accessing from parent directories above
+// From: src/App.tsx
+import { buttonStyles } from "../../components/Button/_internal/button-styles";
+```
+
+### `no-deep-import`
+
+When an index file exists, modules within a directory can only be accessed through its index file. This promotes better encapsulation and cleaner import statements.
+
+**Example:**
+
+```typescript
+// File structure:
+// src/
+// ├── components/
+// │   ├── index.ts          // ✅ Exists - exports all components
+// │   ├── Button.ts
+// │   ├── Input.ts
+// │   └── Modal.ts
+// ├── utils/
+// │   ├── index.ts          // ✅ Exists - exports all utilities
+// │   ├── formatter.ts
+// │   └── validator.ts
+// └── pages/
+//     ├── Home.ts
+//     └── Profile.ts
+
+// ✅ Allowed - importing through index file
+// From: src/pages/Home.ts
+import { Button, Input, Modal } from "../components";
+import { formatter, validator } from "../utils";
+
+// ❌ Not allowed - direct deep import when index exists
+// From: src/pages/Home.ts
+import { Button } from "../components/Button";
+import { formatter } from "../utils/formatter";
+
+// ✅ Allowed - direct import when no index file exists
+// From: src/App.tsx
+import { Home } from "./pages/Home.ts"; // No index.ts in pages/
+```
+
+### `avoid-circular-dependency`
+
+Prevents circular dependencies by restricting index file imports within the same module. This helps maintain clean architecture and prevents runtime issues.
+
+**Example:**
+
+```typescript
+// File structure:
+// src/
+// ├── features/
+// │   ├── index.ts // Exports all modules in features
+// │   ├── user/
+// │   │   ├── index.ts      // Exports user components
+// │   │   ├── UserProfile.ts
+// │   │   ├── UserSettings.ts
+// │   │   └── UserService.ts
+// │   └── shared/
+// │       ├── index.ts      // Exports shared utilities
+// │       ├── constants.ts
+// │       └── helpers.ts
+
+// ✅ Allowed - importing from different modules
+// From: src/features/user/UserProfile.ts
+import { constants } from "../shared";
+
+// ✅ Allowed - importing specific files within same module
+// From: src/features/user/UserProfile.ts
+import { UserService } from "./UserService";
+
+// ❌ Not allowed - importing through index in same directory
+// From: src/features/user/UserProfile.ts
+import { UserService } from "./index"; // Circular dependency risk
+
+// ❌ Not allowed - importing through index in common parent directory
+// From: src/features/user/UserProfile.ts
+import { helperA } from "../index"; // Circular dependency risk
 ```
 
 ### `custom`
@@ -227,7 +311,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Feature Requests & Bug Reports**: [GitHub Issues](https://github.com/your-username/eslint-plugin-module-restrictions/issues)
+- **Feature Requests & Bug Reports**: [GitHub Issues](https://github.com/pereng11/eslint-plugin-module-restrictions/issues)
 
 ## 🙏 Acknowledgments
 
