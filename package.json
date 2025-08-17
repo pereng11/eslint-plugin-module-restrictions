@@ -1,6 +1,7 @@
 {
-  "version": "0.2.2",
+  "version": "0.3.0",
   "name": "eslint-plugin-module-restrictions",
+  "description": "An ESLint plugin that restricts module imports based on file naming patterns. This tool helps enforce architectural rules and maintain consistent code structure in your projects. **With zero configuration needed**!",
   "license": "MIT",
   "author": "pereng11",
   "repository": {
