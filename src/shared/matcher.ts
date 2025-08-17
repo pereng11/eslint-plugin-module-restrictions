@@ -2,7 +2,7 @@ import fs from "fs";
 import { minimatch } from "minimatch";
 import * as path from "path";
 import type { ModuleRestriction } from "./config";
-import { findClosestIndexFile } from "./util";
+import { findClosestIndexDir } from "./util";
 
 export function isImportAllowed(
   importedPath: string,
@@ -21,19 +21,19 @@ export function isImportAllowed(
   );
 
   switch (restriction.rule) {
-    case "same-directory":
+    case "same-directory": {
       return importedDir === importerDir;
-
-    case "shared-module":
+    }
+    case "shared-module": {
       const parentPrefix = importedBasename.split(".")[0];
       return importerBasename.startsWith(parentPrefix);
-
-    case "private-module":
+    }
+    case "private-module": {
       const importedPrefix = importedBasename.split(".")[0];
       const importerPrefix = importerBasename.split(".")[0];
       return importedPrefix === importerPrefix;
-
-    case "internal-directory":
+    }
+    case "internal-directory": {
       // _로 시작하는 폴더 내부의 파일인지 확인
       const importedPathParts = importedPath.split(path.sep);
       const underscoreDirIndex = importedPathParts.findIndex(
@@ -62,8 +62,8 @@ export function isImportAllowed(
       );
 
       return sameLevelImport || internalImport;
-
-    case "no-deep-import":
+    }
+    case "no-deep-import": {
       // importer가 index면 허용
       if (importerBasename === "index") {
         return true;
@@ -77,10 +77,10 @@ export function isImportAllowed(
       } catch {}
 
       // 임포트된 파일의 모든 상위 디렉토리를 확인
-      const indexDir = findClosestIndexFile(importedPath);
+      const closestIndexDir = findClosestIndexDir(importedPath);
 
       // index 파일이 없으면 제한 없음
-      if (indexDir === null) {
+      if (closestIndexDir === null) {
         return true;
       }
 
@@ -91,20 +91,53 @@ export function isImportAllowed(
 
       // 2. indexDir이 importer와 imported의 공통 부모 디렉토리인지 확인
       const isCommonParent =
-        importerDir.startsWith(indexDir + path.sep) &&
-        importedDir.startsWith(indexDir + path.sep);
+        importerPath.startsWith(closestIndexDir) &&
+        importedPath.startsWith(closestIndexDir);
 
       if (isCommonParent) {
         return true;
       }
 
       // 3. imported가 indexDir이고 imported파일이 index이면 허용
-      if (importedDir === indexDir && importedBasename === "index") {
+      if (importedDir === closestIndexDir && importedBasename === "index") {
         return true;
       }
 
       return false;
+    }
+    case "avoid-circular-dependency": {
+      // importer가 index면 허용
+      if (importerBasename === "index") {
+        return true;
+      }
 
+      // 임포트된 파일의 모든 상위 디렉토리를 확인
+      const closestIndexDir = findClosestIndexDir(importedPath);
+
+      // index 파일이 없으면 제한 없음
+      if (closestIndexDir === null) {
+        return true;
+      }
+
+      // 1. importer와 imported가 같은 레벨이거나 indexDir이 importer와 imported의 공통 부모 디렉토리인 경우 index import 금지
+      const isSameLevel = importedDir === importerDir;
+      const isCommonParent =
+        importerPath.startsWith(closestIndexDir) &&
+        importedPath.startsWith(closestIndexDir);
+      let isIndexFileImported = importedBasename === "index";
+      try {
+        const isDirectory = fs.statSync(importedPath).isDirectory();
+        if (isDirectory) {
+          isIndexFileImported = true;
+        }
+      } catch {}
+
+      if (isSameLevel || isCommonParent) {
+        return !isIndexFileImported;
+      }
+
+      return true;
+    }
     case "custom":
       return (
         restriction.allowedImporters?.some((pattern) =>
