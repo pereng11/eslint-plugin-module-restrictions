@@ -13,7 +13,6 @@ export const rules = Object.values(Rule);
 export interface ModuleRestriction {
   pattern: string;
   rule:
-    | Rule.SAME_DIRECTORY
     | Rule.SHARED_MODULE
     | Rule.PRIVATE_MODULE
     | Rule.INTERNAL_DIRECTORY
@@ -26,21 +25,16 @@ export interface ModuleRestriction {
 
 export const DEFAULT_RESTRICTIONS: ModuleRestriction[] = [
   {
-    pattern: "**/*.internal.*",
-    rule: Rule.SAME_DIRECTORY,
-    message: "Internal modules can only be imported within the same directory",
+    pattern: "**/*.private.*",
+    rule: Rule.PRIVATE_MODULE,
+    message:
+      "Private modules can only be imported by files with same parent name",
   },
   {
     pattern: "**/*.shared.*",
     rule: Rule.SHARED_MODULE,
     message:
       "Shared modules can only be imported by files with matching parent prefix",
-  },
-  {
-    pattern: "**/*.private.*",
-    rule: Rule.PRIVATE_MODULE,
-    message:
-      "Private modules can only be imported by files with same parent name",
   },
   {
     pattern: "**/_*/**/*",
