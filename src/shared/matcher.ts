@@ -21,9 +21,6 @@ export function isImportAllowed(
   );
 
   switch (restriction.rule) {
-    case "same-directory": {
-      return importedDir === importerDir;
-    }
     case "shared-module": {
       const parentPrefix = importedBasename.split(".")[0];
       return importerBasename.startsWith(parentPrefix);
