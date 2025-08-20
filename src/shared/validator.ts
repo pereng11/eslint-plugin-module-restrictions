@@ -32,7 +32,9 @@ export function validateImport(
 
   // restrictions의 pattern 중 하나라도 매칭되는지 확인
   const matchedRestrictions = restrictions.filter((restriction) =>
-    minimatch(resolvedPath, restriction.pattern)
+    Array.isArray(restriction.pattern)
+      ? restriction.pattern.some((pattern) => minimatch(resolvedPath, pattern))
+      : minimatch(resolvedPath, restriction.pattern)
   );
 
   // 각 제한 규칙 검사
