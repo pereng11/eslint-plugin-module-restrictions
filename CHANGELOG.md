@@ -20,7 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bug fixes and performance improvements
 
-## [0.4.0] - 2025-01-27
+## [0.4.1] - 2025-08-21
+
+### Fixed
+
+- When custom configurations exist, they are merged with default restrictions instead of replacing them
+
+## [0.4.0] - 2025-08-21
 
 ### Added
 
