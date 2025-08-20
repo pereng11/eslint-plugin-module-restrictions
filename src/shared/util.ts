@@ -1,6 +1,7 @@
 import fs from "fs";
 import * as path from "path";
 
+import { ModuleRestriction, Rule } from "./config";
 import { INDEX_PATTERNS } from "./const";
 
 export const findClosestIndexDir = (filePath: string) => {
@@ -23,3 +24,24 @@ export const findClosestIndexDir = (filePath: string) => {
 
   return null;
 };
+
+export function mergeRestrictions(
+  defaultRestrictions: ModuleRestriction[],
+  customRestrictions: ModuleRestriction[]
+): ModuleRestriction[] {
+  let mergedRestrictions = [...defaultRestrictions];
+
+  for (const customRestriction of customRestrictions) {
+    if (customRestriction.rule === Rule.CUSTOM) {
+      mergedRestrictions = [...mergedRestrictions, customRestriction];
+    } else {
+      mergedRestrictions = mergedRestrictions.map((restriction) =>
+        restriction.rule === customRestriction.rule
+          ? customRestriction
+          : restriction
+      );
+    }
+  }
+
+  return mergedRestrictions;
+}
