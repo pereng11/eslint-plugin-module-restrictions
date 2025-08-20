@@ -43,15 +43,11 @@ module.exports = {
       {
         restrictions: [
           {
-            pattern: "*.test.ts",
-            rule: "same-directory",
-            message: "Test files can only import files from the same directory",
-          },
-          {
-            pattern: "*.component.tsx",
-            rule: "shared-module",
+            pattern: "**/Layer-Level-1/**/*",
+            rule: "custom",
             message:
-              "Component files can only import files with the same prefix",
+              "Layer-Level-1 files can only be imported from Layer-Level-2",
+            allowedImporters: ["**/Layer-Level-2/**/*"],
           },
         ],
       },
@@ -70,9 +66,15 @@ Private modules can only be imported by files with same parent name.
 
 ```typescript
 // File: Modal.private.Header.tsx
+// File: Modal.p.Header.tsx -> 'p' is shorthand alias for 'private'
+
 // ✅ Allowed
 // From: src/components/Modal/Modal.tsx
 import { ModalHeader } from "./Modal.private.Header";
+
+// ✅ Allowed
+// From: src/components/Modal/Modal.tsx
+import { ModalHeader } from "./Modal.p.Header";
 
 // ❌ Not allowed
 // From: src/components/Box/Box.tsx
@@ -90,18 +92,24 @@ Allows imports only from files that start with the same prefix as the importing 
 **Example:**
 
 ```typescript
-// File: Box.sub.Icon.tsx
+// File: Box.shared.Icon.tsx
+// File: Box.s.Icon.tsx -> 's' is shorthand alias for 'shared'
+
 // ✅ Allowed
 // From: src/components/Box/Box.tsx
-import { BoxIcon } from "./Box.sub.Icon";
+import { BoxIcon } from "./Box.shared.Icon";
+
+// ✅ Allowed
+// From: src/components/Box/Box.tsx
+import { BoxIcon } from "./Box.s.Icon";
 
 // ✅ Allowed
 // From: src/components/Box/BoxHeader.tsx
-import { BoxIcon } from "./Box.sub.Icon";
+import { BoxIcon } from "./Box.shared.Icon";
 
 // ❌ Not allowed
 // From: src/components/Button/Button.tsx
-import { BoxIcon } from "./Box.sub.Icon";
+import { BoxIcon } from "./Box.shared.Icon";
 ```
 
 ### `internal-directory`
