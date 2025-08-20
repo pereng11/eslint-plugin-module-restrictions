@@ -6,6 +6,7 @@ import {
   rules,
   validateImport,
 } from "../../shared";
+import { mergeRestrictions } from "../../shared/util";
 
 export const restrictImportsRule: Rule.RuleModule = {
   meta: {
@@ -51,8 +52,10 @@ export const restrictImportsRule: Rule.RuleModule = {
 
   create(context) {
     const options = context.options[0] || {};
-    const restrictions: ModuleRestriction[] =
-      options.restrictions || DEFAULT_RESTRICTIONS;
+    const restrictions: ModuleRestriction[] = mergeRestrictions(
+      DEFAULT_RESTRICTIONS,
+      options.restrictions || []
+    );
 
     return {
       ImportDeclaration(node) {
