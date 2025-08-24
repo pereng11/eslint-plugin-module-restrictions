@@ -20,6 +20,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bug fixes and performance improvements
 
+## [0.5.0] - 2025-08-24
+
+### Added
+
+- Support for both ESM and CJS module systems
+- Support for ESLint flat config (ESLint 9+)
+
+### Changed
+
+- Separated rules for finer-grained control:
+  - `restrict-filename` - Controls imports based on file naming patterns
+  - `restrict-directory` - Manages imports for underscore-prefixed directories
+  - `strict-index` - Enforces index file import rules
+  - `custom` - Allows custom import restrictions
+
 ## [0.4.1] - 2025-08-21
 
 ### Fixed
