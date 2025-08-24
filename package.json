@@ -2,6 +2,7 @@
   "version": "0.4.1",
   "name": "eslint-plugin-module-restrictions",
   "description": "An ESLint plugin that restricts module imports based on file naming patterns. This tool helps enforce architectural rules and maintain consistent code structure in your projects. **With zero configuration needed**!",
+  "type": "module",
   "license": "MIT",
   "author": "pereng11",
   "repository": {
@@ -17,20 +18,24 @@
     "imports",
     "fsd"
   ],
-  "main": "./dist/eslint/index.js",
-  "types": "./dist/eslint/index.d.ts",
   "files": [
     "dist/",
     "README.md"
   ],
   "exports": {
     ".": {
-      "types": "./dist/eslint/index.d.ts",
-      "require": "./dist/eslint/index.js"
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "clean": "rm -rf dist",
@@ -42,6 +47,7 @@
   "devDependencies": {
     "@types/eslint": "^9.6.1",
     "@types/node": "^24.2.1",
+    "tsdown": "^0.14.1",
     "typescript": "~5.8.3",
     "vitest": "^3.2.4"
   },
