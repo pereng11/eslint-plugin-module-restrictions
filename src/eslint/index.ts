@@ -1,22 +1,29 @@
-import type { ESLint } from "eslint";
 import { restrictImportsRule } from "./rules/restrict-imports";
 
-// ESM 스타일로 작성
-export const rules = {
-  "restrict-imports": restrictImportsRule,
+// ESLint flat config 표준에 맞는 플러그인 객체
+const plugin = {
+  meta: {
+    name: "eslint-plugin-module-restrictions",
+  },
+  configs: {},
+  rules: {
+    "restrict-imports": restrictImportsRule,
+  },
 };
 
-export const configs = {
+Object.assign(plugin.configs, {
   recommended: {
+    plugins: { "module-restrictions": plugin },
+    rules: {
+      "module-restrictions/restrict-imports": "error",
+    },
+  },
+  "recommended-legacy": {
     plugins: ["module-restrictions"],
     rules: {
       "module-restrictions/restrict-imports": "error",
     },
   },
-} satisfies Record<string, ESLint.ConfigData>;
+});
 
-// CommonJS 호환성을 위한 기본 export
-export default {
-  rules,
-  configs,
-};
+export default plugin;
