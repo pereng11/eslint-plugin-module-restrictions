@@ -1,14 +1,29 @@
-import type { Rule } from "eslint";
+import type { Rule as ESLintRule } from "eslint";
 import * as path from "path";
-import {
-  DEFAULT_RESTRICTIONS,
-  type ModuleRestriction,
-  rules,
-  validateImport,
-} from "../../shared";
+import { type ModuleRestriction, Rule, validateImport } from "../../shared";
 import { mergeRestrictions } from "../../shared/util";
 
-export const restrictImportsRule: Rule.RuleModule = {
+const STRICT_INDEX_RULES: Rule[] = [
+  Rule.NO_DEEP_IMPORT,
+  Rule.AVOID_CIRCULAR_DEPENDENCY,
+];
+
+const DEFAULT_RESTRICTIONS: ModuleRestriction[] = [
+  {
+    pattern: "**/*",
+    rule: Rule.NO_DEEP_IMPORT,
+    message:
+      "When an index file exists, modules within a directory can only be accessed through its index file",
+  },
+  {
+    pattern: "**/*",
+    rule: Rule.AVOID_CIRCULAR_DEPENDENCY,
+    message:
+      "Avoid importing through index file within the same module to prevent circular dependencies",
+  },
+];
+
+export const strictIndexRule: ESLintRule.RuleModule = {
   meta: {
     type: "problem",
     docs: {
@@ -32,7 +47,7 @@ export const restrictImportsRule: Rule.RuleModule = {
                 pattern: { type: "string" },
                 rule: {
                   type: "string",
-                  enum: rules,
+                  enum: STRICT_INDEX_RULES,
                 },
                 message: { type: "string" },
                 allowedImporters: {
